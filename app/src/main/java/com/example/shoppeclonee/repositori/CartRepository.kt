@@ -1,24 +1,25 @@
 package com.example.shoppeclonee.repositori
 
-import com.example.shoppeclonee.apiservice.ApiClient
-import com.example.shoppeclonee.apiservice.ServiceApiCart
+class CartRepository(
+    private val container: ContainerApp = ContainerApp.instance
+) {
 
-class CartRepository {
+    suspend fun getCart(token: String) =
+        container.cartApi.getCart(token)
 
-    private val api = ApiClient.retrofit.create(ServiceApiCart::class.java)
-
-    suspend fun getCart(userId: Int) = api.getCart(userId)
-
-    suspend fun addToCart(userId: Int, productId: Int, qty: Int) =
-        api.addToCart(
-            mapOf(
-                "user_id" to userId,
-                "product_id" to productId,
-                "quantity" to qty
-            )
+    suspend fun addToCart(token: String, productId: Int, qty: Int) =
+        container.cartApi.addToCart(
+            token,
+            mapOf("product_id" to productId, "qty" to qty)
         )
 
-    suspend fun removeItem(id: Int) = api.removeFromCart(id)
+    suspend fun updateQty(token: String, id: Int, qty: Int) =
+        container.cartApi.updateQty(
+            token,
+            id,
+            mapOf("qty" to qty)
+        )
 
-    suspend fun clearCart(userId: Int) = api.clearCart(userId)
+    suspend fun removeItem(token: String, id: Int) =
+        container.cartApi.removeItem(token, id)
 }

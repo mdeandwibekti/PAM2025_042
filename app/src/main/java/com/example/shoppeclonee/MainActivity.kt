@@ -27,10 +27,8 @@ class MainActivity : ComponentActivity() {
 
                 val navController = rememberNavController()
                 val authVM: AuthViewModel = viewModel()
+                PetaNavigasi(navController, authVM)
 
-                PetaNavigasi(navController,
-                    authVM = authVM
-                )
             }
         }
     }

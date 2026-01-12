@@ -1,15 +1,22 @@
 package com.example.shoppeclonee.repositori
 
-import com.example.shoppeclonee.apiservice.ApiClient
-import com.example.shoppeclonee.apiservice.ServiceApiTransaction
+class TransactionRepository(
+    private val container: ContainerApp = ContainerApp.instance
+) {
 
-class TransactionRepository {
+    suspend fun createTransaction(
+        token: String,
+        orderId: Int,
+        method: String
+    ) =
+        container.transactionApi.createTransaction(
+            token,
+            mapOf(
+                "order_id" to orderId,
+                "payment_method" to method
+            )
+        )
 
-    private val api = ApiClient.retrofit.create(ServiceApiTransaction::class.java)
-
-    suspend fun getTransactions(userId: Int) =
-        api.getTransactions(userId)
-
-    suspend fun createTransaction(body: Map<String, Any?>) =
-        api.createTransaction(body)
+    suspend fun getTransactions(token: String) =
+        container.transactionApi.getTransactions(token)
 }

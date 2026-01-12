@@ -9,9 +9,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
 import com.example.shoppeclonee.view.*
+import com.example.shoppeclonee.viewmodel.provider.AuthViewModel
 
 @Composable
-fun PetaNavigasi(navController: NavHostController) {
+fun PetaNavigasi(navController: NavHostController,
+                    authVM: AuthViewModel
+) {
 
     NavHost(
         navController = navController,
@@ -74,22 +77,7 @@ fun PetaNavigasi(navController: NavHostController) {
 
 
         // ============== PRODUCT DETAIL ============
-        composable(
-            route = "${DestinasiProductDetail.route}/{${DestinasiProductDetail.argProductId}}",
-            arguments = listOf(
-                navArgument(DestinasiProductDetail.argProductId) {
-                    type = NavType.IntType
-                }
-            )
-        ) { backStack ->
-            val productId =
-                backStack.arguments?.getInt(DestinasiProductDetail.argProductId) ?: 0
 
-            HalamanProductDetail(
-                productId = productId,
-                onBack = { navController.popBackStack() }
-            )
-        }
 
         // ================= CART =================
         composable(DestinasiCart.route) {
@@ -109,27 +97,11 @@ fun PetaNavigasi(navController: NavHostController) {
         }
 
         // ================= SELLER =================
-        composable(DestinasiSellerDashboard.route) {
-            HalamanSellerProductList(
-                onAddProduct = {
-                    navController.navigate("product_entry")
-                },
-                onEditProduct = { productId ->
-                    navController.navigate("product_edit/$productId")
-                },
-                onBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
+
 
 
         // Entry input produk (opsional sementara)
-        composable("product_entry") {
-            HalamanProductEntry(
-                onBack = { navController.popBackStack() }
-            )
-        }
+
 
         composable("checkout") {
             HalamanCheckout(
@@ -155,17 +127,31 @@ fun PetaNavigasi(navController: NavHostController) {
             )
         }
 
-        composable("seller_products") {
-            HalamanSellerProductList(
-                onAddProduct = {
-                    navController.navigate("product_entry")
-                },
-                onEditProduct = { id ->
-                    navController.navigate("product_edit/$id")
-                },
-                onBack = { navController.popBackStack() }
+        composable("product_add") {
+            HalamanProductForm(
+                navController = navController,
+                mode = ProductMode.ADD,
             )
         }
+
+        composable("product_edit/{id}") {
+            val id = it.arguments?.getString("id")!!.toInt()
+            HalamanProductForm(
+                navController = navController,
+                mode = ProductMode.EDIT,
+                productId = id,
+            )
+        }
+
+        composable("product_detail/{id}") {
+            val id = it.arguments?.getString("id")!!.toInt()
+            HalamanProductForm(
+                navController = navController,
+                mode = ProductMode.DETAIL,
+                productId = id,
+            )
+        }
+
 
     }
 }

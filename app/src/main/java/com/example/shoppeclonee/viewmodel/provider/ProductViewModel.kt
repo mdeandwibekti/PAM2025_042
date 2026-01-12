@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 
 class ProductViewModel : ViewModel() {
 
+
     private val repo = ProductRepository()
 
     // sementara (nanti ambil dari AuthViewModel)
@@ -30,23 +31,28 @@ class ProductViewModel : ViewModel() {
         }
     }
 
-    fun getProductDetail(id: Int) {
+    fun getProductById(id: Int) {
         viewModelScope.launch {
-            loading.value = true
             try {
                 product.value = repo.getProductById(id)
             } catch (e: Exception) {
                 message.value = e.message
-            } finally {
-                loading.value = false
             }
         }
     }
 
+
+    fun getProductDetail(id: Int) {
+        viewModelScope.launch {
+            product.value = repo.getProductById(id)
+        }
+    }
+
+
     fun addProduct(body: Map<String, Any?>) {
         viewModelScope.launch {
             try {
-                message.value = repo.addProduct(token, body).message
+                message.value = repo.addProduct(token, body as Map<String, Any>).message
                 getProducts() // 🔥 refresh home
             } catch (e: Exception) {
                 message.value = e.message
@@ -73,4 +79,6 @@ class ProductViewModel : ViewModel() {
             }
         }
     }
+
+
 }

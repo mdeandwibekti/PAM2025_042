@@ -6,13 +6,14 @@ import retrofit2.http.*
 
 interface ServiceApiTransaction {
 
-    @GET("api/transactions/{userId}")
-    suspend fun getTransactions(
-        @Path("userId") userId: Int
-    ): List<Transaction>
-
     @POST("api/transactions")
     suspend fun createTransaction(
-        @Body body: Map<String, Any?>
+        @Header("Authorization") token: String,
+        @Body body: Map<String, Any>
     ): BaseResponse
+
+    @GET("api/transactions")
+    suspend fun getTransactions(
+        @Header("Authorization") token: String
+    ): List<Transaction>
 }

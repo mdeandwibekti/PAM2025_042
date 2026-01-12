@@ -6,23 +6,28 @@ import retrofit2.http.*
 
 interface ServiceApiCart {
 
-    @GET("api/cart/{userId}")
+    @GET("api/cart")
     suspend fun getCart(
-        @Path("userId") userId: Int
+        @Header("Authorization") token: String
     ): List<CartItem>
 
     @POST("api/cart")
     suspend fun addToCart(
-        @Body body: Map<String, Any>
+        @Header("Authorization") token: String,
+        @Body body: Map<String, Int>
+    ): BaseResponse
+
+    @PUT("api/cart/{id}")
+    suspend fun updateQty(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Body body: Map<String, Int>
     ): BaseResponse
 
     @DELETE("api/cart/{id}")
-    suspend fun removeFromCart(
+    suspend fun removeItem(
+        @Header("Authorization") token: String,
         @Path("id") id: Int
     ): BaseResponse
-
-    @DELETE("api/cart/user/{userId}")
-    suspend fun clearCart(
-        @Path("userId") userId: Int
-    ): BaseResponse
 }
+

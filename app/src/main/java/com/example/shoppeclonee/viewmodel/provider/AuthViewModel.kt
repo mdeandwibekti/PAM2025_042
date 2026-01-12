@@ -17,16 +17,21 @@ class AuthViewModel(
     var message = mutableStateOf("")
         private set
 
+    var token = mutableStateOf<String?>(null)
+        private set
+
+
     fun login(email: String, password: String) {
         viewModelScope.launch {
             try {
                 val res = repo.login(email, password)
                 if (res.status) {
                     user.value = res.user
+                    token.value = res.token   // 🔥 FIX
                 }
                 message.value = res.message
             } catch (e: Exception) {
-                message.value = "Gagal login: ${e.message}"
+                message.value = "Gagal login"
             }
         }
     }

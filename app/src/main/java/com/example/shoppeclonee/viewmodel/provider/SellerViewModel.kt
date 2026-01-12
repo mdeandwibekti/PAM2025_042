@@ -22,6 +22,26 @@ class SellerViewModel : ViewModel() {
         }
     }
 
+    fun addProduct(
+        token: String,
+        name: String,
+        price: Int,
+        stock: Int,
+        description: String
+    ) {
+        viewModelScope.launch {
+            repo.addProduct(
+                token,
+                mapOf(
+                    "name" to name,
+                    "price" to price,
+                    "stock" to stock,
+                    "description" to description
+                )
+            )
+        }
+    }
+
     fun deleteProduct(token: String, id: Int) {
         viewModelScope.launch {
             try {

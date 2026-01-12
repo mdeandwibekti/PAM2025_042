@@ -8,6 +8,8 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
 
+
+
     private val repo = ProductRepository()
 
     val loading = MutableLiveData(false)
@@ -17,10 +19,11 @@ class HomeViewModel : ViewModel() {
     fun loadProducts() {
         viewModelScope.launch {
             try {
-                products.value = repo.getProducts()
+                products.value = repo.getAllProducts()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
+
 }

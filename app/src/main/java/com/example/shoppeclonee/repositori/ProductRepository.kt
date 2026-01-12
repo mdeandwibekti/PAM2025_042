@@ -1,26 +1,54 @@
 package com.example.shoppeclonee.repositori
 
-import com.example.shoppeclonee.apiservice.ApiClient
-import com.example.shoppeclonee.apiservice.ServiceApiProduct
+class ProductRepository(
+    private val container: ContainerApp = ContainerApp.instance
+) {
 
-class ProductRepository {
+    suspend fun getProducts() =
+        container.productApi.getProducts()
 
-    private val api =
-        ApiClient.retrofit.create(ServiceApiProduct::class.java)
+    suspend fun getProductById(id: Int) =
+        container.productApi.getProductById(id)
 
-    suspend fun getProducts() = api.getProducts()
+    suspend fun createProduct(
+        token: String,
+        name: String,
+        price: Int,
+        stock: Int,
+        description: String
+    ) = container.productApi.createProduct(
+        token = "Bearer $token",
+        body = mapOf(
+            "name" to name,
+            "price" to price,
+            "stock" to stock,
+            "description" to description
+        )
+    )
 
-    suspend fun getProductById(id: Int) = api.getProductById(id)
+    suspend fun getAllProducts() =
+        container.productApi.getAllProducts()
 
-    suspend fun addProduct(token: String, body: Map<String, Any?>) =
-        api.addProduct(token, body)
+    suspend fun addProduct(
+        token: String,
+        body: Map<String, Any>
+    ) = container.productApi.createProduct(token, body)
+
 
     suspend fun updateProduct(
         token: String,
         id: Int,
         body: Map<String, Any?>
-    ) = api.updateProduct(token, id, body)
+    ) =
+        container.productApi.updateProduct(
+            token = token,
+            id = id,
+            body = body
+        )
 
     suspend fun deleteProduct(token: String, id: Int) =
-        api.deleteProduct(token, id)
+        container.productApi.deleteProduct(
+            token = token,
+            id = id
+        )
 }

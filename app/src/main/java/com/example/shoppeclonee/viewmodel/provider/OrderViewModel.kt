@@ -1,43 +1,26 @@
 package com.example.shoppeclonee.viewmodel.provider
 
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.*
 import com.example.shoppeclonee.modeldata.Order
 import com.example.shoppeclonee.repositori.OrderRepository
 import kotlinx.coroutines.launch
 
-class OrderViewModel : ViewModel() {
+class OrderViewModel(
+    private val repo: OrderRepository = OrderRepository()
+) : ViewModel() {
 
-    private val repo = OrderRepository()
+    val orders = mutableStateOf<List<Order>>(emptyList())
+    val message = mutableStateOf("")
 
-    val loading = MutableLiveData(false)
-    val orders = MutableLiveData<List<Order>>()
-    val message = MutableLiveData<String?>()
-
-    fun getOrders(userId: Int) {
-        viewModelScope.launch {
-            loading.value = true
-            try {
-                orders.value = repo.getOrders(userId)
-            } catch (e: Exception) {
-                message.value = e.message
-            } finally {
-                loading.value = false
-            }
-        }
+    fun loadOrders(token: String) = viewModelScope.launch {
+        orders.value = repo.getOrders(token)
     }
 
-    fun createOrder(body: Map<String, Any?>) {
-        viewModelScope.launch {
-            try { message.value = repo.createOrder(body).message }
-            catch (e: Exception) { message.value = e.message }
-        }
-    }
-
-    fun updateStatus(id: Int, status: String) {
-        viewModelScope.launch {
-            try { message.value = repo.updateStatus(id, status).message }
-            catch (e: Exception) { message.value = e.message }
-        }
+    fun checkout(token: String) = viewModelScope.launch {
+        val res = repo.createOrder(token)
+        message.value = res.message
     }
 }
+
