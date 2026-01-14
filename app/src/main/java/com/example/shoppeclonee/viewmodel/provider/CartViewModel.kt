@@ -19,15 +19,16 @@ class CartViewModel(
         cartItems.value = repo.getCart(token)
     }
 
-    fun addToCart(productId: Int) = viewModelScope.launch {
+    fun addToCart(productId: Int, quantity: Int = 1) = viewModelScope.launch {
         val token = authVM.token.value ?: return@launch
-        repo.addToCart(token, productId)
-        loadCart()
+        repo.addToCart(token, productId, quantity)
+        loadCart(token)
     }
+
 
     fun loadCart() = viewModelScope.launch {
         val token = authVM.token.value ?: return@launch
-        cart.value = repo.getCart(token).data ?: emptyList()
+        cartItems.value = repo.getCart(token)
     }
 
     fun getCart() {
@@ -41,9 +42,10 @@ class CartViewModel(
         }
     }
 
-    fun remove(token: String, id: Int) = viewModelScope.launch {
+    fun remove(id: Int) = viewModelScope.launch {
+        val token = authVM.token.value ?: return@launch
         repo.removeItem(token, id)
-        loadCart(token)
+        loadCart()
     }
 }
 

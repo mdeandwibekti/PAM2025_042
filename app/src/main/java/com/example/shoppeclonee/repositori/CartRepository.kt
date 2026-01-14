@@ -1,5 +1,7 @@
 package com.example.shoppeclonee.repositori
 
+import com.example.shoppeclonee.ContainerApp
+
 class CartRepository(
     private val container: ContainerApp = ContainerApp.instance
 ) {

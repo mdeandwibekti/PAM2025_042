@@ -16,14 +16,12 @@ import com.example.shoppeclonee.viewmodel.provider.OrderViewModel
 fun HalamanOrder(
     onBack: () -> Unit,
     authVm: AuthViewModel = viewModel(),
-    orderVm: OrderViewModel = viewModel(),
-    token: String,
-    vm: OrderViewModel = viewModel()
+    orderVm: OrderViewModel = viewModel()
 ) {
 
-    val token = authVm.user.value?.token ?: ""
+    val token = authVm.token.value ?: ""
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(token) {
         if (token.isNotEmpty()) {
             orderVm.loadOrders(token)
         }

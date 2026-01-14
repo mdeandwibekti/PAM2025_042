@@ -1,8 +1,7 @@
 package com.example.shoppeclonee.repositori
 
+import com.example.shoppeclonee.ContainerApp
 import com.example.shoppeclonee.apiservice.BaseResponse
-import com.example.shoppeclonee.apiservice.ProductResponse
-import com.example.shoppeclonee.apiservice.ServiceApiProduct
 import com.example.shoppeclonee.modeldata.Product
 
 class ProductRepository {
@@ -14,14 +13,7 @@ class ProductRepository {
     }
 
     suspend fun getProductById(id: Int): Product {
-        return api.getProductById(id).data
-    }
-
-    /* =============================
-       ===== GET ALL PRODUCTS ======
-       ============================= */
-    suspend fun getProducts(): List<Product> {
-        return api.getProduct()
+        return api.getProductById(id).data.first()
     }
 
     suspend fun createProduct(
@@ -30,15 +22,17 @@ class ProductRepository {
         price: Int,
         stock: Int,
         description: String
-    ) = api.createProduct(
-        "Bearer $token",
-        mapOf(
-            "name" to name,
-            "price" to price,
-            "stock" to stock,
-            "description" to description
+    ): BaseResponse {
+        return api.createProduct(
+            "Bearer $token",
+            mapOf(
+                "name" to name,
+                "price" to price,
+                "stock" to stock,
+                "description" to description
+            )
         )
-    )
+    }
 
     suspend fun updateProduct(
         token: String,
@@ -47,17 +41,20 @@ class ProductRepository {
         price: Int,
         stock: Int,
         description: String
-    ) = api.updateProduct(
-        "Bearer $token",
-        id,
-        mapOf(
-            "name" to name,
-            "price" to price,
-            "stock" to stock,
-            "description" to description
+    ): BaseResponse {
+        return api.updateProduct(
+            "Bearer $token",
+            id,
+            mapOf(
+                "name" to name,
+                "price" to price,
+                "stock" to stock,
+                "description" to description
+            )
         )
-    )
+    }
 
-    suspend fun deleteProduct(token: String, id: Int) =
-        api.deleteProduct("Bearer $token", id)
+    suspend fun deleteProduct(token: String, id: Int): BaseResponse {
+        return api.deleteProduct("Bearer $token", id)
+    }
 }

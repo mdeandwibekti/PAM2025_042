@@ -1,30 +1,61 @@
 package com.example.shoppeclonee.view
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.shoppeclonee.repositori.ShoppeCloneApp
+import com.example.shoppeclonee.uicontroller.route.DestinasiProfile
 import com.example.shoppeclonee.viewmodel.provider.AuthViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HalamanSellerHome(
     navController: NavHostController,
-    vm: AuthViewModel = viewModel()
-
+    authVM: AuthViewModel // ⬅️ DIKIRIM DARI NAVIGASI
 ) {
-    Scaffold(
-        topBar = { TopAppBarLokalku("Dashboard Seller") },
 
-        // ✅ BOTTOM BAR DITAMBAHKAN
+    val token = authVM.token.value
+    val user = authVM.user.value
+
+    // ================= PROTEKSI SELLER =================
+    if (token.isNullOrEmpty() || user == null || user.role != "seller") {
+        LaunchedEffect(Unit) {
+            navController.navigate("login") {
+                popUpTo(0)
+            }
+        }
+        return
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Dashboard Seller") },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            navController.navigate(DestinasiProfile.route) {
+                                popUpTo("seller_home") { inclusive = true }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Kembali ke Profil"
+                        )
+                    }
+                }
+            )
+        },
         bottomBar = {
             BottomBarLokalku(navController)
         },
-
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate("product_add") }
@@ -41,7 +72,7 @@ fun HalamanSellerHome(
         ) {
 
             Text(
-                text = "Selamat datang 👋",
+                text = "Selamat datang 👋 ${user.username}",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )

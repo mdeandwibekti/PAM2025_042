@@ -1,88 +1,130 @@
 package com.example.shoppeclonee.viewmodel.provider
 
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.shoppeclonee.modeldata.Product
 import com.example.shoppeclonee.repositori.ProductRepository
+import com.example.shoppeclonee.repositori.ShoppeCloneApp
 import kotlinx.coroutines.launch
 
 class ProductViewModel(
-    private val repo: ProductRepository = ProductRepository()
+    private val repo: ProductRepository = ProductRepository(),
+    private val authVM: AuthViewModel = ShoppeCloneApp.authVM
 ) : ViewModel() {
 
-    val products = mutableStateOf<List<Product>>(emptyList())val message = mutableStateOf("")
+    val products = mutableStateOf<List<Product>>(emptyList())
+    val product = mutableStateOf<Product?>(null)
 
-    // sementara (nanti ambil dari AuthViewModel)
-    private val token = "Bearer TOKEN_LOGIN_KAMU"
-    val loading = MutableLiveData(false)
-    val product = MutableLiveData<Product?>()
+    val loading = mutableStateOf(false)
+    val message = mutableStateOf<String?>(null)
 
+    private val token: String
+        get() = authVM.token.value.orEmpty()
 
+    // ================= LOAD ALL =================
     fun loadProducts() = viewModelScope.launch {
-        products.value = repo.getAllProducts()
+        loading.value = true
+        message.value = null
+
+        try {
+            products.value = repo.getAllProducts()
+        } catch (e: Exception) {
+            message.value = e.message ?: "Gagal memuat produk"
+        } finally {
+            loading.value = false
+        }
     }
 
+    // ================= GET BY ID =================
+    fun getProductById(id: Int) = viewModelScope.launch {
+        loading.value = true
+        message.value = null
+
+        try {
+            product.value = repo.getProductById(id)
+        } catch (e: Exception) {
+            message.value = "Produk tidak ditemukan"
+        } finally {
+            loading.value = false
+        }
+    }
+
+    // ================= ADD =================
     fun addProduct(
-        token: String,
         name: String,
         price: Int,
         stock: Int,
-        description: String
+        description: String,
+        onSuccess: () -> Unit
     ) = viewModelScope.launch {
-        repo.createProduct(token, name, price, stock, description)
-        loadProducts()
-    }
 
-    fun getProducts() {
-        viewModelScope.launch {
-            loading.value = true
-            try {
-                products.value = repo.getProducts()
-            } catch (e: Exception) {
-                message.value = e.message
-            } finally {
-                loading.value = false
-            }
+        if (token.isEmpty()) {
+            message.value = "Anda belum login"
+            return@launch
+        }
+
+        loading.value = true
+        message.value = null
+
+        try {
+            repo.createProduct(token, name, price, stock, description)
+            loadProducts()
+            onSuccess()
+        } catch (e: Exception) {
+            message.value = e.message ?: "Gagal menyimpan produk"
+        } finally {
+            loading.value = false
         }
     }
 
-    fun getProductById(id: Int) {
-        viewModelScope.launch {
-            try {
-                product.value = repo.getProductById(id)
-            } catch (e: Exception) {
-                message.value = e.message
-            }
+    // ================= UPDATE =================
+    fun updateProduct(
+        id: Int,
+        name: String,
+        price: Int,
+        stock: Int,
+        description: String,
+        onSuccess: () -> Unit
+    ) = viewModelScope.launch {
+
+        if (token.isEmpty()) {
+            message.value = "Anda belum login"
+            return@launch
+        }
+
+        loading.value = true
+        message.value = null
+
+        try {
+            repo.updateProduct(token, id, name, price, stock, description)
+            loadProducts()
+            onSuccess()
+        } catch (e: Exception) {
+            message.value = e.message ?: "Gagal update produk"
+        } finally {
+            loading.value = false
         }
     }
 
+    // ================= DELETE =================
+    fun deleteProduct(id: Int) = viewModelScope.launch {
 
-    fun getProductDetail(id: Int) {
-        viewModelScope.launch {
-            product.value = repo.getProductById(id)
+        if (token.isEmpty()) {
+            message.value = "Anda belum login"
+            return@launch
+        }
+
+        loading.value = true
+        message.value = null
+
+        try {
+            repo.deleteProduct(token, id)
+            loadProducts()
+        } catch (e: Exception) {
+            message.value = "Gagal hapus produk"
+        } finally {
+            loading.value = false
         }
     }
-
-
-    fun updateProduct(id: Int, body: Map<String, Any?>) {
-        viewModelScope.launch {
-            try {
-                message.value = repo.updateProduct(token, id, body).message
-            } catch (e: Exception) {
-                message.value = e.message
-            }
-        }
-    }
-
-    fun deleteProduct(id: Int) {
-        viewModelScope.launch {
-            try {
-                message.value = repo.deleteProduct(token, id).message
-            } catch (e: Exception) {
-                message.value = e.message
-            }
-        }
-    }
-
-
 }

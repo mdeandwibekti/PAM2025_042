@@ -17,8 +17,12 @@ class AuthViewModel(
     var user = mutableStateOf<User?>(null)
         private set
 
-    var message = mutableStateOf("")
+    var message = mutableStateOf<String?>(null)
         private set
+
+    var role = mutableStateOf<String?>(null)
+        private set
+
 
 
 
@@ -26,14 +30,17 @@ class AuthViewModel(
     fun login(email: String, password: String) {
         viewModelScope.launch {
             try {
-                val res = repo.login(email, password)
-                if (res.status) {
-                    user.value = res.user
-                    token.value = res.token   // 🔥 FIX
+                val response = repo.login(email, password)
+                if (response.status) {
+                    user.value = response.user
+                    token.value = response.token
+                    role.value = response.user?.role // 🔥 WAJIB
+                    message.value = null
+                } else {
+                    message.value = response.message
                 }
-                message.value = res.message
             } catch (e: Exception) {
-                message.value = "Gagal login"
+                message.value = e.message ?: "Terjadi kesalahan"
             }
         }
     }
@@ -51,5 +58,7 @@ class AuthViewModel(
 
     fun logout() {
         user.value = null
+        token.value = null
+        role.value = null
     }
 }

@@ -37,7 +37,6 @@ fun HalamanHome(
     var searchText by remember { mutableStateOf("") }
 
     val authVm: AuthViewModel = viewModel()
-    val token = authVm.user.value?: return
 
     LaunchedEffect(Unit) {
         productVm.loadProducts()
@@ -81,6 +80,7 @@ fun HalamanHome(
             modifier = Modifier
                 .padding(pad)
                 .padding(8.dp)
+                .fillMaxSize()
         ) {
 
             // ================= PROMO BANNER =================

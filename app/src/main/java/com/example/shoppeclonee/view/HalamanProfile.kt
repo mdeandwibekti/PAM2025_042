@@ -8,25 +8,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.shoppeclonee.repositori.ShoppeCloneApp
-import com.example.shoppeclonee.view.components.ProfileMenuIcon
+import com.example.shoppeclonee.uicontroller.route.DestinasiHome
 import com.example.shoppeclonee.viewmodel.provider.AuthViewModel
 
 @Composable
 fun HalamanProfile(
     navController: NavHostController,
-    onLoginClick: () -> Unit,
-    vm: AuthViewModel = viewModel()
+    authVM: AuthViewModel,
+    onLoginClick: () -> Unit
 ) {
-    val user = vm.user.value
+    val user = authVM.user.value
 
     Scaffold(
         topBar = { TopAppBarLokalku("Profil") },
@@ -47,7 +44,6 @@ fun HalamanProfile(
                         .padding(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
                     Icon(
                         Icons.Default.Person,
                         contentDescription = null,
@@ -56,7 +52,6 @@ fun HalamanProfile(
                     )
 
                     Spacer(Modifier.height(12.dp))
-
                     Text("Anda belum login")
 
                     Spacer(Modifier.height(16.dp))
@@ -73,7 +68,7 @@ fun HalamanProfile(
             // ================= SUDAH LOGIN =================
             else {
 
-                // -------- HEADER PROFIL --------
+                // ---------- HEADER ----------
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -104,7 +99,10 @@ fun HalamanProfile(
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        Text(user.email ?: "-", style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            user.email ?: "-",
+                            style = MaterialTheme.typography.bodySmall
+                        )
                         Text(
                             "Role: ${user.role}",
                             style = MaterialTheme.typography.labelSmall,
@@ -115,59 +113,34 @@ fun HalamanProfile(
 
                 Spacer(Modifier.height(16.dp))
 
-                // -------- PESANAN --------
-                Text(
-                    "Pesanan Saya",
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    style = MaterialTheme.typography.titleSmall
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    ProfileMenuIcon(Icons.Default.Payment, "Belum Bayar")
-                    ProfileMenuIcon(Icons.Default.Inventory, "Dikemas")
-                    ProfileMenuIcon(Icons.Default.LocalShipping, "Dikirim")
-                }
-
-                Spacer(Modifier.height(16.dp))
-
-                // -------- AKTIVITAS --------
-                Text(
-                    "Aktivitas",
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    style = MaterialTheme.typography.titleSmall
-                )
-
-                ListItem(
-                    headlineContent = { Text("Favorit Saya") },
-                    leadingContent = { Icon(Icons.Default.Favorite, null) }
-                )
-
-                // KHUSUS SELLER
+                // ================= MENU SELLER =================
                 if (user.role == "seller") {
                     ListItem(
                         headlineContent = { Text("Dashboard Seller") },
-                        leadingContent = { Icon(Icons.Default.Store, null) },
+                        leadingContent = {
+                            Icon(Icons.Default.Store, contentDescription = null)
+                        },
                         modifier = Modifier.clickable {
                             navController.navigate("seller_home")
                         }
                     )
+                    Divider()
                 }
 
-                Divider()
-
+                // ================= LOGOUT =================
                 ListItem(
                     headlineContent = { Text("Logout") },
                     leadingContent = {
-                        Icon(Icons.Default.Logout, null, tint = MaterialTheme.colorScheme.error)
+                        Icon(
+                            Icons.Default.Logout,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
                     },
                     modifier = Modifier.clickable {
-                        vm.logout()
-                        navController.navigate("home") {
+                        authVM.logout()
+
+                        navController.navigate(DestinasiHome.route) {
                             popUpTo(0)
                         }
                     }
@@ -176,5 +149,3 @@ fun HalamanProfile(
         }
     }
 }
-
-

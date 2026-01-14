@@ -15,7 +15,7 @@ class SellerViewModel : ViewModel() {
     fun loadSellerProducts() {
         viewModelScope.launch {
             try {
-                myProducts.value = repo.getProducts()
+                myProducts.value = repo.getAllProducts()
             } catch (e: Exception) {
                 message.value = e.message
             }
@@ -30,15 +30,19 @@ class SellerViewModel : ViewModel() {
         description: String
     ) {
         viewModelScope.launch {
-            repo.addProduct(
-                token,
-                mapOf(
-                    "name" to name,
-                    "price" to price,
-                    "stock" to stock,
-                    "description" to description
+            try {
+                val response = repo.createProduct(
+                    token,
+                    name,
+                    price,
+                    stock,
+                    description
                 )
-            )
+                message.value = response.message
+                loadSellerProducts()
+            } catch (e: Exception) {
+                message.value = e.message
+            }
         }
     }
 

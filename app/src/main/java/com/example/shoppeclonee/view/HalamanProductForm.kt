@@ -1,6 +1,8 @@
 package com.example.shoppeclonee.view
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -9,10 +11,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.shoppeclonee.viewmodel.provider.ProductViewModel
 
-
 enum class ProductMode {
     ADD, EDIT, DETAIL
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HalamanProductForm(
@@ -25,19 +27,27 @@ fun HalamanProductForm(
     var name by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var stock by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
 
-    // 🔥 LOAD DATA UNTUK EDIT / DETAIL
+    val isLoading = vm.loading.value
+    val error = vm.message.value
+    val product = vm.product.value
+
+    // ================= LOAD PRODUCT =================
     LaunchedEffect(productId) {
         if (mode != ProductMode.ADD && productId != null) {
             vm.getProductById(productId)
         }
     }
 
-    // 🔥 SET DATA SAAT DETAIL / EDIT
-    vm.product.value?.let {
-        name = it.name
-        price = it.price.toString()
-        stock = it.stock.toString()
+    // ================= SET DATA =================
+    LaunchedEffect(product) {
+        product?.let {
+            name = it.name
+            price = it.price.toString()
+            stock = it.stock.toString()
+            description = it.description ?: ""
+        }
     }
 
     Scaffold(
@@ -51,6 +61,11 @@ fun HalamanProductForm(
                             ProductMode.DETAIL -> "Detail Produk"
                         }
                     )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
                 }
             )
         }
@@ -59,12 +74,13 @@ fun HalamanProductForm(
         Column(
             modifier = Modifier
                 .padding(pad)
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
             OutlinedTextField(
                 value = name,
-                onValueChange = { if (mode != ProductMode.DETAIL) name = it },
+                onValueChange = { name = it },
                 label = { Text("Nama Produk") },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = mode != ProductMode.DETAIL
@@ -72,7 +88,7 @@ fun HalamanProductForm(
 
             OutlinedTextField(
                 value = price,
-                onValueChange = { if (mode != ProductMode.DETAIL) price = it },
+                onValueChange = { price = it },
                 label = { Text("Harga") },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = mode != ProductMode.DETAIL
@@ -80,31 +96,50 @@ fun HalamanProductForm(
 
             OutlinedTextField(
                 value = stock,
-                onValueChange = { if (mode != ProductMode.DETAIL) stock = it },
+                onValueChange = { stock = it },
                 label = { Text("Stok") },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = mode != ProductMode.DETAIL
             )
 
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Deskripsi") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = mode != ProductMode.DETAIL
+            )
+
+            // ================= ERROR =================
+            if (!error.isNullOrBlank()) {
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
+
+
             Spacer(Modifier.height(16.dp))
 
-            // 🔥 ACTION BUTTON
             when (mode) {
+
                 ProductMode.ADD -> {
                     Button(
                         onClick = {
                             vm.addProduct(
-                                mapOf(
-                                    "name" to name,
-                                    "price" to price.toInt(),
-                                    "stock" to stock.toInt()
-                                )
-                            )
-                            navController.popBackStack()
+                                name = name,
+                                price = price.toIntOrNull() ?: 0,
+                                stock = stock.toIntOrNull() ?: 0,
+                                description = description
+                            ) {
+                                navController.popBackStack()
+                            }
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isLoading
                     ) {
-                        Text("Simpan")
+                        Text(if (isLoading) "Menyimpan..." else "Simpan")
                     }
                 }
 
@@ -113,17 +148,18 @@ fun HalamanProductForm(
                         onClick = {
                             vm.updateProduct(
                                 id = productId!!,
-                                body = mapOf(
-                                    "name" to name,
-                                    "price" to price.toInt(),
-                                    "stock" to stock.toInt()
-                                )
-                            )
-                            navController.popBackStack()
+                                name = name,
+                                price = price.toIntOrNull() ?: 0,
+                                stock = stock.toIntOrNull() ?: 0,
+                                description = description
+                            ) {
+                                navController.popBackStack()
+                            }
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isLoading
                     ) {
-                        Text("Update")
+                        Text(if (isLoading) "Mengupdate..." else "Update")
                     }
                 }
 
@@ -141,3 +177,4 @@ fun HalamanProductForm(
         }
     }
 }
+

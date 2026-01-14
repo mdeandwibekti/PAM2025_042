@@ -42,7 +42,9 @@ fun HalamanLogin(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    val user = vm.user.value
+    val token = vm.token.value
+    val role = vm.role.value
+    val message = vm.message.value
 
     Scaffold(
         topBar = { TopAppBarLokalku("Login") }
@@ -71,13 +73,17 @@ fun HalamanLogin(
             Spacer(Modifier.height(12.dp))
 
             Button(
-                onClick = { vm.login(email, password) },
+                onClick = {
+                    if (email.isNotBlank() && password.isNotBlank()) {
+                        vm.login(email, password)
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Login")
             }
 
-            vm.message.value?.let {
+            message?.let {
                 Spacer(Modifier.height(8.dp))
                 Text(it, color = MaterialTheme.colorScheme.error)
             }
@@ -88,12 +94,13 @@ fun HalamanLogin(
                 Text("Belum punya akun? Daftar")
             }
 
-            // 🔥 INI YANG PENTING
-            LaunchedEffect(user) {
-                user?.let {
-                    onLoginSuccess(it.role)
+            // ✅ LOGIN BERHASIL → PINDAH HALAMAN
+            LaunchedEffect(token, role) {
+                if (!token.isNullOrEmpty() && !role.isNullOrEmpty()) {
+                    onLoginSuccess(role)
                 }
             }
         }
     }
 }
+

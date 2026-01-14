@@ -23,7 +23,7 @@ data class BaseResponse(
 
 data class ProductResponse(
     val msg: String,
-    val data: Product?
+    val data: List<Product>
 )
 
 data class LoginResponse(
@@ -56,7 +56,8 @@ interface ServiceApiUser {
 interface ServiceApiProduct {
 
     @GET("api/products")
-    suspend fun getProducts(): List<Product>
+    suspend fun getAllProducts(): ProductResponse
+    //
 
     @GET("api/products/{id}")
     suspend fun getProductById(
@@ -68,9 +69,6 @@ interface ServiceApiProduct {
         @Header("Authorization") token: String,
         @Body body: Map<String, Any?>
     ): BaseResponse
-
-    @GET("api/products")
-    suspend fun getAllProducts(): ProductResponse
 
     @PUT("api/products/{id}")
     suspend fun updateProduct(

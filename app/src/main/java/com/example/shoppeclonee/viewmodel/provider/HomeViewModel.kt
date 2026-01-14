@@ -13,8 +13,15 @@ class HomeViewModel : ViewModel() {
     val products = MutableLiveData<List<Product>>(emptyList())
     val message = MutableLiveData<String?>()
 
-    fun loadProducts() = viewModelScope.launch {
-        products.value = repo.getAllProducts()
+    fun loadProducts() {
+        viewModelScope.launch {
+            try {
+                products.value = repo.getAllProducts()
+            } catch (e: Exception) {
+                products.value = emptyList()
+            }
+        }
     }
+
 
 }
