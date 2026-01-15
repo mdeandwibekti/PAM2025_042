@@ -154,8 +154,12 @@ fun PetaNavigasi(
 
 
         /* ================= CART ================= */
+        // D:/.../uicontroller/route/PetaNavigasi.kt
+
+        /* ================= CART ================= */
         composable(DestinasiCart.route) {
             HalamanCart(
+                authVM = authVM, // Kirim authVM ke HalamanCart
                 onCheckout = {
                     navController.navigate(DestinasiOrder.route)
                 },

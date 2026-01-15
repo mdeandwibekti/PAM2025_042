@@ -14,15 +14,17 @@ class CartRepository(
 
     // D:/semester 5/PAM/shoppeclonee/app/src/main/java/com/example/shoppeclonee/repositori/CartRepository.kt
 
+    // app/src/main/java/com/example/shoppeclonee/repositori/CartRepository.kt
     suspend fun addToCart(token: String, productId: Int, quantity: Int) {
         val formattedToken = if (token.startsWith("Bearer ")) token else "Bearer $token"
-        api.addToCart(
-            token = formattedToken,
-            body = mapOf(
-                "id" to productId, // Ganti ke 'id' jika 'product_id' gagal
-                "qty" to quantity  // Ganti ke 'qty' jika 'quantity' gagal
-            )
+
+        // Sesuaikan dengan req.body di backend baru
+        val body = mapOf(
+            "product_id" to productId,
+            "quantity" to quantity
         )
+
+        api.addToCart(token = formattedToken, body = body)
     }
 
     suspend fun updateQty(token: String, id: Int, qty: Int) =

@@ -1,6 +1,5 @@
 package com.example.shoppeclonee.view
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,16 +16,13 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import com.example.shoppeclonee.R
-import com.example.shoppeclonee.repositori.ShoppeCloneApp
 import com.example.shoppeclonee.uicontroller.route.DestinasiCart
 import com.example.shoppeclonee.viewmodel.provider.AuthViewModel
 import com.example.shoppeclonee.viewmodel.provider.HomeViewModel
 import com.example.shoppeclonee.viewmodel.provider.CartViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.shoppeclonee.modeldata.Product
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,19 +31,25 @@ fun HalamanHome(
     onProductClick: (Int) -> Unit,
     authVM: AuthViewModel,
     vm: HomeViewModel = viewModel(),
-    cartVM: CartViewModel = viewModel()
+    cartVM: CartViewModel = viewModel(),
 ) {
-
     var searchText by remember { mutableStateOf("") }
 
-    // 🔥 Observe LiveData dengan benar di Compose
+    // State untuk BottomSheet Picker
+    var showSheet by remember { mutableStateOf(false) }
+    var selectedProduct by remember { mutableStateOf<Product?>(null) }
+    var quantity by remember { mutableIntStateOf(1) }
+    val sheetState = rememberModalBottomSheetState()
+
     val products by vm.products.observeAsState(emptyList())
     val loading by vm.loading.observeAsState(false)
     val message by vm.message.observeAsState()
 
+
     LaunchedEffect(Unit) {
         vm.loadProducts()
     }
+
     LaunchedEffect(authVM) {
         cartVM.setAuth(authVM)
     }
@@ -66,9 +68,7 @@ fun HalamanHome(
                     )
                 },
                 actions = {
-                    IconButton(
-                        onClick = { navController.navigate(DestinasiCart.route) }
-                    ) {
+                    IconButton(onClick = { navController.navigate(DestinasiCart.route) }) {
                         Icon(Icons.Default.ShoppingCart, null)
                     }
                 }
@@ -77,68 +77,94 @@ fun HalamanHome(
         bottomBar = { BottomBarLokalku(navController) }
     ) { pad ->
 
-        if (loading) {
-            // 🔥 Tampilkan loading indicator
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(pad),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else if (products.isEmpty()) {
-            // 🔥 Tampilkan pesan jika tidak ada produk
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(pad),
-                contentAlignment = Alignment.Center
+        // --- BOTTOM SHEET (PICKER JUMLAH) ---
+        if (showSheet && selectedProduct != null) {
+            ModalBottomSheet(
+                onDismissRequest = { showSheet = false },
+                sheetState = sheetState
             ) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .padding(bottom = 32.dp)
                 ) {
-                    Text("Tidak ada produk", style = MaterialTheme.typography.bodyLarge)
-                    if (!message.isNullOrBlank()) {
+                    Text(
+                        text = selectedProduct?.name ?: "",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Harga: Rp ${selectedProduct?.price}",
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(text = "Tentukan Jumlah", fontWeight = FontWeight.Medium)
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        FilledIconButton(
+                            onClick = { if (quantity > 1) quantity-- },
+                            colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color.LightGray)
+                        ) { Text("-", style = MaterialTheme.typography.titleLarge) }
+
                         Text(
-                            message!!,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.error
+                            text = quantity.toString(),
+                            modifier = Modifier.padding(horizontal = 32.dp),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
                         )
+
+                        FilledIconButton(
+                            onClick = { quantity++ },
+                            colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color.LightGray)
+                        ) { Text("+", style = MaterialTheme.typography.titleLarge) }
                     }
-                    Button(onClick = { vm.loadProducts() }) {
-                        Text("Coba Lagi")
+
+                    Button(
+                        onClick = {
+                            cartVM.addToCart(
+                                authVM = authVM,
+                                productId = selectedProduct!!.id,
+                                quantity = quantity,
+                                onSuccess = {
+                                    showSheet = false
+                                    navController.navigate(DestinasiCart.route)
+                                }
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Text("Konfirmasi & Masuk Keranjang")
                     }
                 }
             }
-        } else {
-            // 🔥 Tampilkan produk
-            LazyColumn(
-                modifier = Modifier
-                    .padding(pad)
-                    .padding(8.dp)
-            ) {
+        }
 
+        // --- LOADING & CONTENT ---
+        if (loading) {
+            Box(Modifier.fillMaxSize().padding(pad), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else {
+            LazyColumn(modifier = Modifier.padding(pad).padding(8.dp)) {
                 item {
+                    // Banner Selamat Datang
                     Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .padding(vertical = 6.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        )
+                        modifier = Modifier.fillMaxWidth().height(140.dp).padding(vertical = 6.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Text(
-                                "SELAMAT DATANG DI PASAR LOKALKU",
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(all = 50.dp),
+                                "PASAR LOKALKU",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = Color.White,
+                                fontWeight = FontWeight.ExtraBold
                             )
                         }
                     }
@@ -146,7 +172,6 @@ fun HalamanHome(
 
                 items(products.chunked(2)) { row ->
                     Row(modifier = Modifier.fillMaxWidth()) {
-
                         row.forEach { p ->
                             Card(
                                 modifier = Modifier
@@ -154,44 +179,33 @@ fun HalamanHome(
                                     .padding(6.dp)
                                     .clickable { onProductClick(p.id) }
                             ) {
-                                Column(Modifier.padding(8.dp)) {
-
+                                Column(Modifier.padding(10.dp)) {
                                     Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(120.dp),
+                                        modifier = Modifier.fillMaxWidth().height(100.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Icon(
-                                            Icons.Default.Star,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(48.dp)
-                                        )
+                                        Icon(Icons.Default.Star, null, modifier = Modifier.size(40.dp))
                                     }
 
-                                    Text(
-                                        p.name,
-                                        maxLines = 2,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
+                                    Text(p.name, maxLines = 1, fontWeight = FontWeight.Bold)
+                                    Text("Rp ${p.price}", color = MaterialTheme.colorScheme.primary)
 
-                                    Text(
-                                        "Rp ${p.price}",
-                                        color = MaterialTheme.colorScheme.primary,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
 
-                                    // ...
                                     Button(
-                                        onClick = { cartVM.addToCart(authVM, p.id) }, // Lewatkan authVM
-                                        modifier = Modifier.fillMaxWidth()
+                                        onClick = {
+                                            selectedProduct = p
+                                            quantity = 1
+                                            showSheet = true
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        contentPadding = PaddingValues(0.dp)
                                     ) {
-                                        Text("Tambah")
+                                        Text("Tambah", style = MaterialTheme.typography.bodySmall)
                                     }
                                 }
                             }
                         }
-
                         if (row.size == 1) Spacer(modifier = Modifier.weight(1f))
                     }
                 }
@@ -199,5 +213,3 @@ fun HalamanHome(
         }
     }
 }
-
-
