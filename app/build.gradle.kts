@@ -86,6 +86,7 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.play.services.cast.framework)
+    implementation(libs.androidx.compose.foundation)
 
 
     testImplementation(libs.junit)

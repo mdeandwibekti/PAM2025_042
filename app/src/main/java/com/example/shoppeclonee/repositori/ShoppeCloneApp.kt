@@ -5,8 +5,17 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import com.example.shoppeclonee.viewmodel.provider.AuthViewModel
 
-object ShoppeCloneApp {
-    lateinit var authVM: AuthViewModel
+class ShoppeCloneApp : Application() {
+
+    companion object {
+        lateinit var authVM: AuthViewModel
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        authVM = AuthViewModel()
+    }
 }
+
 
 

@@ -21,10 +21,7 @@ data class BaseResponse(
     val user: User?
 )
 
-data class ProductResponse(
-    val msg: String,
-    val data: List<Product>
-)
+
 
 data class LoginResponse(
     val status: Boolean,
@@ -32,6 +29,14 @@ data class LoginResponse(
     val token: String?, // 🔥 WAJIB
     val user: User?
 )
+
+data class ProductRequest(
+    val name: String,
+    val price: Int,
+    val stock: Int,
+    val description: String?
+)
+
 
 // ================= API =================
 
@@ -53,33 +58,3 @@ interface ServiceApiUser {
     ): User
 }
 
-interface ServiceApiProduct {
-
-    @GET("api/products")
-    suspend fun getAllProducts(): ProductResponse
-    //
-
-    @GET("api/products/{id}")
-    suspend fun getProductById(
-        @Path("id") id: Int
-    ): ProductResponse
-
-    @POST("api/products")
-    suspend fun createProduct(
-        @Header("Authorization") token: String,
-        @Body body: Map<String, Any?>
-    ): BaseResponse
-
-    @PUT("api/products/{id}")
-    suspend fun updateProduct(
-        @Header("Authorization") token: String,
-        @Path("id") id: Int,
-        @Body body: Map<String, Any?>
-    ): BaseResponse
-
-    @DELETE("api/products/{id}")
-    suspend fun deleteProduct(
-        @Header("Authorization") token: String,
-        @Path("id") id: Int
-    ): BaseResponse
-}

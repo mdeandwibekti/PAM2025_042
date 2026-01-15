@@ -23,10 +23,6 @@ class AuthViewModel(
     var role = mutableStateOf<String?>(null)
         private set
 
-
-
-
-
     fun login(email: String, password: String) {
         viewModelScope.launch {
             try {
@@ -34,7 +30,7 @@ class AuthViewModel(
                 if (response.status) {
                     user.value = response.user
                     token.value = response.token
-                    role.value = response.user?.role // 🔥 WAJIB
+                    role.value = response.user?.role
                     message.value = null
                 } else {
                     message.value = response.message
@@ -44,6 +40,7 @@ class AuthViewModel(
             }
         }
     }
+
 
     fun register(username: String, email: String, password: String, role: String) {
         viewModelScope.launch {
@@ -60,5 +57,6 @@ class AuthViewModel(
         user.value = null
         token.value = null
         role.value = null
+        message.value = null
     }
 }

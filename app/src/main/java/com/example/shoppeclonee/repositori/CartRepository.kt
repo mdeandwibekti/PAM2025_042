@@ -10,29 +10,31 @@ class CartRepository(
 
 
     suspend fun getCart(token: String) =
-        container.cartApi.getCart(token)
+        container.cartApi.getCart(if (token.startsWith("Bearer ")) token else "Bearer $token")
 
-    suspend fun addToCart(
-        token: String,
-        productId: Int,
-        quantity: Int
-    ) {
+    // D:/semester 5/PAM/shoppeclonee/app/src/main/java/com/example/shoppeclonee/repositori/CartRepository.kt
+
+    suspend fun addToCart(token: String, productId: Int, quantity: Int) {
+        val formattedToken = if (token.startsWith("Bearer ")) token else "Bearer $token"
         api.addToCart(
-            token = "Bearer $token",
+            token = formattedToken,
             body = mapOf(
-                "product_id" to productId,
-                "quantity" to quantity
+                "id" to productId, // Ganti ke 'id' jika 'product_id' gagal
+                "qty" to quantity  // Ganti ke 'qty' jika 'quantity' gagal
             )
         )
     }
 
     suspend fun updateQty(token: String, id: Int, qty: Int) =
         container.cartApi.updateQty(
-            token,
+            if (token.startsWith("Bearer ")) token else "Bearer $token",
             id,
             mapOf("qty" to qty)
         )
 
     suspend fun removeItem(token: String, id: Int) =
-        container.cartApi.removeItem(token, id)
+        container.cartApi.removeItem(
+            if (token.startsWith("Bearer ")) token else "Bearer $token",
+            id
+        )
 }

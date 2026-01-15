@@ -7,8 +7,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.shoppeclonee.repositori.ProductRepository
+import com.example.shoppeclonee.repositori.ShoppeCloneApp
+import com.example.shoppeclonee.viewmodel.provider.AuthViewModel
 import com.example.shoppeclonee.viewmodel.provider.ProductViewModel
 
 enum class ProductMode {
@@ -21,8 +26,15 @@ fun HalamanProductForm(
     navController: NavHostController,
     mode: ProductMode,
     productId: Int? = null,
-    vm: ProductViewModel = viewModel()
+    authVM: AuthViewModel   // ✅ TAMBAH INI
+
 ) {
+
+    // ✅ AuthViewModel GLOBAL
+    // ✅ ProductViewModel (BENAR)
+    val vm: ProductViewModel = viewModel(
+        factory = ProductViewModelFactory(authVM)
+    )
 
     var name by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
@@ -110,15 +122,13 @@ fun HalamanProductForm(
                 enabled = mode != ProductMode.DETAIL
             )
 
-            // ================= ERROR =================
+            // 🔴 ERROR MESSAGE
             if (!error.isNullOrBlank()) {
                 Text(
                     text = error,
                     color = MaterialTheme.colorScheme.error
                 )
             }
-
-
 
             Spacer(Modifier.height(16.dp))
 
@@ -147,7 +157,7 @@ fun HalamanProductForm(
                     Button(
                         onClick = {
                             vm.updateProduct(
-                                id = productId!!,
+                                id = productId ?: return@Button,
                                 name = name,
                                 price = price.toIntOrNull() ?: 0,
                                 stock = stock.toIntOrNull() ?: 0,
@@ -178,3 +188,19 @@ fun HalamanProductForm(
     }
 }
 
+/* ================= FACTORY ================= */
+
+class ProductViewModelFactory(
+    private val authVM: AuthViewModel
+) : ViewModelProvider.Factory {
+
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(ProductViewModel::class.java)) {
+            return ProductViewModel(
+                repo = ProductRepository(),
+                authVM = authVM
+            ) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel")
+    }
+}

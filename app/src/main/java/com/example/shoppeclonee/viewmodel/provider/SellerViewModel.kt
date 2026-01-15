@@ -5,9 +5,10 @@ import com.example.shoppeclonee.modeldata.Product
 import com.example.shoppeclonee.repositori.ProductRepository
 import kotlinx.coroutines.launch
 
-class SellerViewModel : ViewModel() {
-
-    private val repo = ProductRepository()
+class SellerViewModel(
+    private val repo: ProductRepository,
+    private val authVM: AuthViewModel
+) : ViewModel() {
 
     val myProducts = MutableLiveData<List<Product>>()
     val message = MutableLiveData<String?>()
@@ -15,40 +16,20 @@ class SellerViewModel : ViewModel() {
     fun loadSellerProducts() {
         viewModelScope.launch {
             try {
-                myProducts.value = repo.getAllProducts()
+                val token = authVM.token.value ?: return@launch
+                myProducts.value = repo.getSellerProducts(token)
             } catch (e: Exception) {
                 message.value = e.message
             }
         }
     }
 
-    fun addProduct(
-        token: String,
-        name: String,
-        price: Int,
-        stock: Int,
-        description: String
-    ) {
-        viewModelScope.launch {
-            try {
-                val response = repo.createProduct(
-                    token,
-                    name,
-                    price,
-                    stock,
-                    description
-                )
-                message.value = response.message
-                loadSellerProducts()
-            } catch (e: Exception) {
-                message.value = e.message
-            }
-        }
-    }
 
-    fun deleteProduct(token: String, id: Int) {
+
+    fun deleteProduct(id: Int) {
         viewModelScope.launch {
             try {
+                val token = authVM.token.value ?: return@launch
                 repo.deleteProduct(token, id)
                 loadSellerProducts()
             } catch (e: Exception) {
@@ -57,3 +38,4 @@ class SellerViewModel : ViewModel() {
         }
     }
 }
+

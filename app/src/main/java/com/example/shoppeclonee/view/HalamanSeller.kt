@@ -1,5 +1,6 @@
 package com.example.shoppeclonee.view
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -86,7 +87,11 @@ fun HalamanSellerHome(
             Spacer(Modifier.height(12.dp))
 
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        navController.navigate("seller_products") // 🔥 ROUTE HARUS SAMA
+                    },
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
@@ -107,6 +112,8 @@ fun HalamanSellerHome(
                     )
                 }
             }
+
+
 
             Text(
                 text = "Gunakan tombol + untuk menambahkan produk baru",
