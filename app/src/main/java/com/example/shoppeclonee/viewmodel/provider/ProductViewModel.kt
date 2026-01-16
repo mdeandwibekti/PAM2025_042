@@ -57,6 +57,7 @@ class ProductViewModel(
         price: Int,
         stock: Int,
         description: String,
+        image: String,
         onSuccess: () -> Unit
     ) = viewModelScope.launch {
 
@@ -69,7 +70,7 @@ class ProductViewModel(
         clearMessage()
 
         try {
-            repo.createProduct(token!!, name, price, stock, description)
+            repo.createProduct(token!!, name, price, stock, description, image)
             loadProducts()
             onSuccess()
         } catch (e: Exception) {
@@ -86,6 +87,7 @@ class ProductViewModel(
         price: Int,
         stock: Int,
         description: String,
+        image: String,
         onSuccess: () -> Unit
     ) = viewModelScope.launch {
 
@@ -98,7 +100,7 @@ class ProductViewModel(
         clearMessage()
 
         try {
-            repo.updateProduct(token!!, id, name, price, stock, description)
+            repo.updateProduct(token!!, id, name, price, stock, description, image)
             loadProducts()
             onSuccess()
         } catch (e: Exception) {

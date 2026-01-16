@@ -13,3 +13,11 @@ data class Product(
     @SerializedName("seller_id")
     val sellerId: Int
 )
+
+data class ProductRequest(
+    val name: String,
+    val price: Int,
+    val stock: Int,
+    val description: String?,
+    val image: String? // ✅ Tambahkan ini
+)

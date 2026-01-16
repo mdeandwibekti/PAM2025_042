@@ -85,6 +85,9 @@ dependencies {
 // Untuk icon-icon tambahan (seperti tombol hapus/keranjang)
     implementation("androidx.compose.material:material-icons-extended")
 
+    // Coil untuk memuat gambar dari URL/Local
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
 
 
     implementation(libs.androidx.ui)

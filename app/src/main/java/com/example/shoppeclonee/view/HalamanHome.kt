@@ -17,7 +17,9 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import coil.compose.AsyncImage
 import com.example.shoppeclonee.uicontroller.route.DestinasiCart
 import com.example.shoppeclonee.viewmodel.provider.AuthViewModel
 import com.example.shoppeclonee.viewmodel.provider.HomeViewModel
@@ -180,11 +182,21 @@ fun HalamanHome(
                                     .clickable { onProductClick(p.id) }
                             ) {
                                 Column(Modifier.padding(10.dp)) {
+                                    // Di dalam Card produk HalamanHome.kt
                                     Box(
                                         modifier = Modifier.fillMaxWidth().height(100.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Icon(Icons.Default.Star, null, modifier = Modifier.size(40.dp))
+                                        if (!p.image.isNullOrEmpty()) {
+                                            AsyncImage(
+                                                model = p.image,
+                                                contentDescription = p.name,
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentScale = ContentScale.Crop
+                                            )
+                                        } else {
+                                            Icon(Icons.Default.Star, null, modifier = Modifier.size(40.dp))
+                                        }
                                     }
 
                                     Text(p.name, maxLines = 1, fontWeight = FontWeight.Bold)
@@ -192,16 +204,16 @@ fun HalamanHome(
 
                                     Spacer(modifier = Modifier.height(8.dp))
 
+                                    // Di dalam HalamanHome.kt
                                     Button(
                                         onClick = {
-                                            selectedProduct = p
+                                            selectedProduct = p // 'p' adalah objek Product
                                             quantity = 1
-                                            showSheet = true
+                                            showSheet = true // Menampilkan Bottom Sheet untuk input jumlah
                                         },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        contentPadding = PaddingValues(0.dp)
+                                        modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text("Tambah", style = MaterialTheme.typography.bodySmall)
+                                        Text("Tambah")
                                     }
                                 }
                             }
