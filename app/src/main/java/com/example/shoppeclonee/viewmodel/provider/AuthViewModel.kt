@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.*
 import com.example.shoppeclonee.modeldata.User
 import com.example.shoppeclonee.repositori.AuthRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
@@ -22,6 +23,9 @@ class AuthViewModel(
 
     var role = mutableStateOf<String?>(null)
         private set
+
+    val userId = MutableStateFlow<Int?>(null)
+
 
     fun login(email: String, password: String) {
         viewModelScope.launch {

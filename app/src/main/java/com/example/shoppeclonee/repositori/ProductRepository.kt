@@ -3,7 +3,6 @@ package com.example.shoppeclonee.repositori
 import android.net.Uri
 import com.example.shoppeclonee.ContainerApp
 import com.example.shoppeclonee.apiservice.BaseResponse
-import com.example.shoppeclonee.apiservice.ProductRequest
 import com.example.shoppeclonee.modeldata.Product
 import android.util.Log
 import okhttp3.MediaType.Companion.toMediaTypeOrNull

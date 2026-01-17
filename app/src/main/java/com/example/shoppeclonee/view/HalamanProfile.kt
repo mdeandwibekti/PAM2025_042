@@ -36,7 +36,7 @@ fun HalamanProfile(
                 .fillMaxSize()
         ) {
 
-            // ================= BELUM LOGIN =================
+            /* ================= BELUM LOGIN ================= */
             if (user == null) {
                 Column(
                     modifier = Modifier
@@ -52,34 +52,51 @@ fun HalamanProfile(
                     )
 
                     Spacer(Modifier.height(12.dp))
-                    Text("Anda belum login")
+                    Text(
+                        "LOKALKU",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Text("Belum login", style = MaterialTheme.typography.bodyMedium)
 
                     Spacer(Modifier.height(16.dp))
 
                     Button(
                         onClick = onLoginClick,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.large
                     ) {
                         Text("Login")
                     }
                 }
             }
 
-            // ================= SUDAH LOGIN =================
+            /* ================= SUDAH LOGIN ================= */
             else {
 
-                // ---------- HEADER ----------
-                Row(
+                /* ---------- HEADER PROFILE ---------- */
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.primaryContainer)
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(vertical = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+
+                    Text(
+                        "LOKALKU",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(Modifier.height(16.dp))
 
                     Surface(
                         shape = CircleShape,
-                        modifier = Modifier.size(64.dp),
+                        modifier = Modifier.size(72.dp),
                         color = MaterialTheme.colorScheme.primary
                     ) {
                         Box(contentAlignment = Alignment.Center) {
@@ -91,29 +108,29 @@ fun HalamanProfile(
                         }
                     }
 
-                    Spacer(Modifier.width(12.dp))
+                    Spacer(Modifier.height(12.dp))
 
-                    Column {
-                        Text(
-                            user.username,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            user.email ?: "-",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        Text(
-                            "Role: ${user.role}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
+                    Text(
+                        user.username,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        user.email ?: "-",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+
+                    Text(
+                        "Role: ${user.role}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(24.dp))
 
-                // ================= MENU SELLER =================
+                /* ================= MENU SELLER ================= */
                 if (user.role == "seller") {
                     ListItem(
                         headlineContent = { Text("Dashboard Seller") },
@@ -127,9 +144,15 @@ fun HalamanProfile(
                     Divider()
                 }
 
-                // ================= LOGOUT =================
+                /* ================= LOGOUT ================= */
                 ListItem(
-                    headlineContent = { Text("Logout") },
+                    headlineContent = {
+                        Text(
+                            "Logout",
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.Medium
+                        )
+                    },
                     leadingContent = {
                         Icon(
                             Icons.Default.Logout,
@@ -139,7 +162,6 @@ fun HalamanProfile(
                     },
                     modifier = Modifier.clickable {
                         authVM.logout()
-
                         navController.navigate(DestinasiHome.route) {
                             popUpTo(0)
                         }
@@ -149,3 +171,4 @@ fun HalamanProfile(
         }
     }
 }
+

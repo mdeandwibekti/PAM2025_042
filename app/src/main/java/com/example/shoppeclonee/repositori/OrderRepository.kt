@@ -1,19 +1,17 @@
-package com.example.shoppeclonee.repositori
+package com.example.shoppeclonee.repository
 
-import com.example.shoppeclonee.ContainerApp
-import com.example.shoppeclonee.apiservice.BaseResponse
-import com.example.shoppeclonee.apiservice.OrderResponse
+import com.example.shoppeclonee.apiservice.ServiceApiOrder
+import com.example.shoppeclonee.modeldata.Order
 
-class OrderRepository {
+class OrderRepository(
+    private val api: ServiceApiOrder
+) {
 
-    private val api = ContainerApp.instance.orderApi
-
-    suspend fun createOrder(token: String): BaseResponse {
-        return api.createOrder("Bearer $token")
+    suspend fun getOrders(token: String): List<Order>? {
+        val response = api.getOrders("Bearer $token")
+        return response.data
     }
 
-    suspend fun getOrders(token: String): OrderResponse {
-        return api.getOrders("Bearer $token")
-    }
+    suspend fun createOrder(token: String) =
+        api.createOrder("Bearer $token")
 }
-

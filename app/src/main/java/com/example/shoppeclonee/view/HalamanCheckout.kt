@@ -8,39 +8,47 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.shoppeclonee.repositori.ShoppeCloneApp.Companion.authVM
 import com.example.shoppeclonee.viewmodel.provider.CartViewModel
 import com.example.shoppeclonee.viewmodel.provider.OrderViewModel
 
 @Composable
 fun HalamanCheckout(
+    token: String,
     onOrderCreated: () -> Unit,
     onBack: () -> Unit,
     cartVm: CartViewModel = viewModel(),
     orderVm: OrderViewModel = viewModel()
 ) {
+    val token = authVM.token.value ?: return
+    val userId = authVM.user.value?.id ?: return
 
-    // 🔧 sementara (nanti dari Auth/session)
-    val userId = 1
 
-    // ✅ FIX: TANPA parameter
-    LaunchedEffect(Unit) {
-        cartVm.getCart()
+    // 🔥 LOAD CART
+    LaunchedEffect(token, userId) {
+        cartVm.loadCart(token, userId)
     }
 
-    val cartItems = cartVm.cart.value ?: emptyList()
 
-    // 🔧 sementara harga dummy
-    val total = cartItems.sumOf { it.quantity * 10000 }
-    val orderVM: OrderViewModel = viewModel()
+    val cartItems by cartVm.cartItems.collectAsState()
+    val totalPrice by cartVm.totalPrice.collectAsState()
+    val message by orderVm.message.collectAsState()
+
 
     Scaffold(
-        topBar = { TopAppBarLokalku("Checkout", onBack) }
+        topBar = {
+            TopAppBarLokalku(
+                title = "Checkout",
+                onBack = onBack
+            )
+        }
     ) { pad ->
 
         Column(
             modifier = Modifier
                 .padding(pad)
                 .padding(16.dp)
+                .fillMaxSize()
         ) {
 
             Text(
@@ -48,33 +56,65 @@ fun HalamanCheckout(
                 style = MaterialTheme.typography.titleLarge
             )
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
 
-            LazyColumn {
-                items(cartItems) { item ->
-                    Text(
-                        text = "Produk ID: ${item.product_id} x${item.quantity}"
-                    )
+            if (cartItems.isEmpty()) {
+                Text("Keranjang kosong")
+                return@Column
+            }
+
+            LazyColumn(
+                modifier = Modifier.weight(1f)
+            ) {
+                items(
+                    items = cartItems,
+                    key = { it.id }
+                ) { item ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)
+                    ) {
+                        Text(text = item.product.name)
+                        Text(
+                            text = "${item.quantity} x Rp ${item.product.price}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    Divider()
                 }
             }
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
 
-            Text("Total: Rp $total")
+            Text(
+                text = "Total: Rp $totalPrice",
+                style = MaterialTheme.typography.titleMedium
+            )
 
             Spacer(Modifier.height(16.dp))
 
             Button(
+                modifier = Modifier.fillMaxWidth(),
+                enabled = cartItems.isNotEmpty(),
                 onClick = {
-                    orderVM.createOrder(token = "dummy")
+                    orderVm.createOrder(
+                        token = token,
+                        onSuccess = {
+                            onOrderCreated()
+                        }
+                    )
                 }
             ) {
                 Text("Buat Order")
             }
 
-            orderVm.message.value?.let {
+            message?.let {
                 Spacer(Modifier.height(8.dp))
-                Text(it)
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }

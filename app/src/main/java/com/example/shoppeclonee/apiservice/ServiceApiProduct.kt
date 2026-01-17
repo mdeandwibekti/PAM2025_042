@@ -35,13 +35,17 @@ interface ServiceApiProduct {
     @POST("api/products")
     suspend fun createProduct(
         @Header("Authorization") token: String,
+
         @Part("name") name: RequestBody,
         @Part("price") price: Int,
         @Part("stock") stock: Int,
         @Part("description") description: RequestBody?,
-        @Part("category") category: RequestBody?,
-        @Part image: MultipartBody.Part? // Mengirim file fisik gambar
+        @Part("category") category: RequestBody,
+
+        @Part image: MultipartBody.Part?
     ): BaseResponse
+
+
 
     @Multipart
     @PUT("api/products/{id}")
@@ -61,10 +65,12 @@ interface ServiceApiProduct {
         @Path("id") id: Int
     ): BaseResponse
 
-    @GET("api/seller/products")
+    @GET("api/products/my")
     suspend fun getSellerProducts(
         @Header("Authorization") token: String
     ): List<Product>
+
+
 
 
 }

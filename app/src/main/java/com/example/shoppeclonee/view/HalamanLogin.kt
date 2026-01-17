@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoppeclonee.view.TopAppBarLokalku
 import com.example.shoppeclonee.viewmodel.provider.AuthViewModel
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavHostController
 import com.example.shoppeclonee.repositori.ShoppeCloneApp
 
@@ -38,7 +39,6 @@ fun HalamanLogin(
     onRegisterClick: () -> Unit,
     vm: AuthViewModel = viewModel()
 ) {
-
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -46,55 +46,92 @@ fun HalamanLogin(
     val role = vm.role.value
     val message = vm.message.value
 
-    Scaffold(
-        topBar = { TopAppBarLokalku("Login") }
-    ) { pad ->
+    Scaffold { pad ->
         Column(
             modifier = Modifier
                 .padding(pad)
-                .padding(16.dp)
+                .padding(24.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
+            /* ===== BRAND ===== */
+            Text(
+                text = "LOKALKU",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary
             )
 
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
+            Spacer(Modifier.height(6.dp))
+
+            Text(
+                "Masuk ke akun Anda",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(Modifier.height(32.dp))
+
+            /* ===== CARD LOGIN ===== */
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation()
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            Button(
-                onClick = {
-                    if (email.isNotBlank() && password.isNotBlank()) {
-                        vm.login(email, password)
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
             ) {
-                Text("Login")
+                Column(
+                    modifier = Modifier.padding(20.dp)
+                ) {
+
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Email") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true
+                    )
+
+                    Spacer(Modifier.height(20.dp))
+
+                    Button(
+                        onClick = {
+                            if (email.isNotBlank() && password.isNotBlank()) {
+                                vm.login(email, password)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Login")
+                    }
+
+                    message?.let {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
             }
 
-            message?.let {
-                Spacer(Modifier.height(8.dp))
-                Text(it, color = MaterialTheme.colorScheme.error)
-            }
-
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(16.dp))
 
             TextButton(onClick = onRegisterClick) {
                 Text("Belum punya akun? Daftar")
             }
 
-            // ✅ LOGIN BERHASIL → PINDAH HALAMAN
+            /* ===== LOGIN BERHASIL ===== */
             LaunchedEffect(token, role) {
                 if (!token.isNullOrEmpty() && !role.isNullOrEmpty()) {
                     onLoginSuccess(role)

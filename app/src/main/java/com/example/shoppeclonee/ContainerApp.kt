@@ -1,28 +1,24 @@
 package com.example.shoppeclonee
 
-import com.example.shoppeclonee.apiservice.ServiceApiCart
-import com.example.shoppeclonee.apiservice.ServiceApiOrder
-import com.example.shoppeclonee.apiservice.ServiceApiProduct
-import com.example.shoppeclonee.apiservice.ServiceApiTransaction
-import com.example.shoppeclonee.apiservice.ServiceApiUser
+import com.example.shoppeclonee.apiservice.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class ContainerApp private constructor() {
 
-    val instance: ContainerApp
-        get() = this
-
-    private val retrofit = Retrofit.Builder()
+    private val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl("http://10.0.2.2:3000/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    val userApi: ServiceApiUser =
+    val userApi: ServiceApiUser by lazy {
         retrofit.create(ServiceApiUser::class.java)
+    }
 
-    val productApi: ServiceApiProduct =
+    val productApi: ServiceApiProduct by lazy {
         retrofit.create(ServiceApiProduct::class.java)
+    }
+
     val cartApi: ServiceApiCart by lazy {
         retrofit.create(ServiceApiCart::class.java)
     }

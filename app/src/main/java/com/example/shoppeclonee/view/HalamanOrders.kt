@@ -7,6 +7,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoppeclonee.viewmodel.provider.AuthViewModel
@@ -19,24 +21,26 @@ fun HalamanOrder(
     orderVm: OrderViewModel = viewModel()
 ) {
 
-    val token = authVm.token.value ?: ""
+    val token = authVm.token.value
 
     LaunchedEffect(token) {
-        if (token.isNotEmpty()) {
+        if (!token.isNullOrEmpty()) {
             orderVm.loadOrders(token)
         }
     }
 
+    val orders by orderVm.orders.collectAsState()
+
     Scaffold(
         topBar = { TopAppBarLokalku("Pesanan", onBack) }
     ) { pad ->
-
         LazyColumn(
             modifier = Modifier.padding(pad)
         ) {
-            items(orderVm.orders.value) { order ->
+            items(orders) { order ->
                 Text("Order ID: ${order.id}")
             }
         }
     }
 }
+

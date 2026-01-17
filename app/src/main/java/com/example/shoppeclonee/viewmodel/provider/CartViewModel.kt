@@ -1,100 +1,89 @@
 package com.example.shoppeclonee.viewmodel.provider
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.shoppeclonee.ContainerApp
 import com.example.shoppeclonee.modeldata.CartItem
-import com.example.shoppeclonee.repositori.CartRepository
+import com.example.shoppeclonee.repository.CartRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class CartViewModel(
-    private val repo: CartRepository = CartRepository(),
-) : ViewModel() {
+class CartViewModel : ViewModel() {
 
-    private var authVM: AuthViewModel? = null
+    private val repository = CartRepository(
+        ContainerApp.instance.cartApi
+    )
 
-    var cartItems = mutableStateOf<List<CartItem>>(emptyList())
-        private set
-    val message = mutableStateOf("")
-    val cart = mutableStateOf<List<CartItem>>(emptyList())
+    private val _cartItems = MutableStateFlow<List<CartItem>>(emptyList())
+    val cartItems: StateFlow<List<CartItem>> = _cartItems
 
-
-    fun setAuth(authViewModel: AuthViewModel) {
-        this.authVM = authViewModel
-    }
+    private val _totalPrice = MutableStateFlow(0)
+    val totalPrice: StateFlow<Int> = _totalPrice
 
 
-    // Di CartViewModel.kt
-    // D:/.../viewmodel/provider/CartViewModel.kt
-
-    // D:/.../viewmodel/provider/CartViewModel.kt
-
-    // Lokasi: app/src/main/java/com/example/shoppeclonee/viewmodel/provider/CartViewModel.kt
-
-    // D:/.../viewmodel/provider/CartViewModel.kt
-
-    // Inisialisasi awal HARUS list kosong agar .isEmpty() tidak crash
-
-    fun loadCart(token: String) = viewModelScope.launch {
-        try {
-            cartItems.value = repo.getCart(token)
-        } catch (e: Exception) {
-            Log.e("CartVM", "Gagal load: ${e.message}")
-        }
-    }
 
     fun addToCart(
-        authVM: AuthViewModel,
+        token: String,
+        userId: Int,
         productId: Int,
-        quantity: Int = 1,
-        onSuccess: () -> Unit = {}
-    ) = viewModelScope.launch {
-        val token = authVM.token.value
-        if (token.isNullOrBlank()) {
-            message.value = "Silahkan login terlebih dahulu"
-            return@launch
-        }
-
-        try {
-            // 1. Tambah produk ke database backend
-            repo.addToCart(token, productId, quantity)
-
-            // 2. REFRESH DATA secara sinkron (tunggu sampai selesai)
-            // Kita panggil repo langsung di sini agar datanya update dulu
-            val updatedCart = repo.getCart(token)
-            cartItems.value = updatedCart
-
-            message.value = "Berhasil ditambah ke keranjang"
-
-            // 3. Panggil navigasi SETELAH data diperbarui
-            onSuccess()
-
-        } catch (e: Exception) {
-            Log.e("CartViewModel", "Error: ${e.message}")
-            message.value = "Gagal: ${e.localizedMessage}"
-        }
-    }
-
-    fun getCart() {
+        quantity: Int
+    ) {
         viewModelScope.launch {
             try {
-                val token = authVM?.token?.value ?: return@launch
-                // ✅ Update variabel yang sama (cartItems)
-                cartItems.value = repo.getCart(token)
+                repository.addToCart(token, productId, quantity)
+                loadCart(token, userId)
             } catch (e: Exception) {
-                cartItems.value = emptyList()
+                e.printStackTrace()
             }
         }
     }
 
-    fun remove(id: Int) = viewModelScope.launch {
-        val token = authVM?.token?.value ?: return@launch
-        try {
-            repo.removeItem(token, id)
-            getCart()
-        } catch (e: Exception) {
-            Log.e("CartVM", "Gagal hapus")
+
+    fun loadCart(token: String, userId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = repository.getCart(token, userId)
+                _cartItems.value = response.items
+                _totalPrice.value = response.total
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
+
+
+    fun updateQuantity(
+        token: String,
+        userId: Int,
+        cartId: Int,
+        quantity: Int
+    ) {
+        viewModelScope.launch {
+            try {
+                repository.updateQuantity(token, cartId, quantity)
+                loadCart(token, userId)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+
+    fun removeItem(
+        token: String,
+        userId: Int,
+        cartId: Int
+    ) {
+        viewModelScope.launch {
+            try {
+                repository.removeItem(token, cartId)
+                loadCart(token, userId)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
 }
 

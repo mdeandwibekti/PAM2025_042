@@ -1,42 +1,67 @@
-package com.example.shoppeclonee.repositori
+package com.example.shoppeclonee.repository
 
-import com.example.shoppeclonee.ContainerApp
+import com.example.shoppeclonee.apiservice.ServiceApiCart
+import com.example.shoppeclonee.modeldata.BaseResponses
+import com.example.shoppeclonee.modeldata.CartItem
+import com.example.shoppeclonee.modeldata.CartResponse
 
 class CartRepository(
-    private val container: ContainerApp = ContainerApp.instance
+    private val api: ServiceApiCart
 ) {
 
-    private val api = ContainerApp.instance.cartApi
+    suspend fun addToCart(
+        token: String,
+        productId: Int,
+        quantity: Int
+    ): BaseResponses<CartItem> {
 
-
-    suspend fun getCart(token: String) =
-        container.cartApi.getCart(if (token.startsWith("Bearer ")) token else "Bearer $token")
-
-    // D:/semester 5/PAM/shoppeclonee/app/src/main/java/com/example/shoppeclonee/repositori/CartRepository.kt
-
-    // app/src/main/java/com/example/shoppeclonee/repositori/CartRepository.kt
-    suspend fun addToCart(token: String, productId: Int, quantity: Int) {
-        val formattedToken = if (token.startsWith("Bearer ")) token else "Bearer $token"
-
-        // Sesuaikan dengan req.body di backend baru
         val body = mapOf(
             "product_id" to productId,
             "quantity" to quantity
         )
 
-        api.addToCart(token = formattedToken, body = body)
+        return api.addToCart(
+            token = formatToken(token),
+            body = body
+        )
     }
 
-    suspend fun updateQty(token: String, id: Int, qty: Int) =
-        container.cartApi.updateQty(
-            if (token.startsWith("Bearer ")) token else "Bearer $token",
-            id,
-            mapOf("qty" to qty)
+    suspend fun getCart(
+        token: String,
+        userId: Int
+    ): CartResponse {
+        return api.getCartByUser(
+            token = formatToken(token),
+            userId = userId
         )
+    }
 
-    suspend fun removeItem(token: String, id: Int) =
-        container.cartApi.removeItem(
-            if (token.startsWith("Bearer ")) token else "Bearer $token",
-            id
+    suspend fun updateQuantity(
+        token: String,
+        cartId: Int,
+        quantity: Int
+    ): BaseResponses<CartItem> {
+
+        return api.updateQuantity(
+            token = formatToken(token),
+            id = cartId,
+            body = mapOf("quantity" to quantity)
         )
+    }
+
+    suspend fun removeItem(
+        token: String,
+        cartId: Int
+    ): BaseResponses<Any> {
+
+        return api.removeFromCart(
+            token = formatToken(token),
+            id = cartId
+        )
+    }
+
+    private fun formatToken(token: String): String {
+        return if (token.startsWith("Bearer ")) token else "Bearer $token"
+    }
 }
+

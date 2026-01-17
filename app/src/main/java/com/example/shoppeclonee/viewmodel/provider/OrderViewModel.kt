@@ -1,48 +1,50 @@
 package com.example.shoppeclonee.viewmodel.provider
 
-
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.shoppeclonee.ContainerApp
 import com.example.shoppeclonee.modeldata.Order
-import com.example.shoppeclonee.repositori.OrderRepository
+import com.example.shoppeclonee.repository.OrderRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class OrderViewModel(
-    private val repo: OrderRepository = OrderRepository()
-) : ViewModel() {
+class OrderViewModel : ViewModel() {
 
-    var orders = mutableStateOf<List<Order>>(emptyList())
-        private set
-    var order = mutableStateOf<Order?>(null)
-        private set
+    // 🔥 repository langsung di sini (TANPA FACTORY)
+    private val repository = OrderRepository(
+        ContainerApp.instance.orderApi
+    )
 
-    var message = mutableStateOf("")
-        private set
+    private val _orders = MutableStateFlow<List<Order>>(emptyList())
+    val orders: StateFlow<List<Order>> = _orders
+
+    private val _message = MutableStateFlow<String?>(null)
+    val message: StateFlow<String?> = _message
 
     fun loadOrders(token: String) {
         viewModelScope.launch {
-            val res = repo.getOrders(token)
-            orders.value = res.data ?: emptyList()
-        }
-    }
-
-
-    fun createOrder(token: String) {
-        viewModelScope.launch {
             try {
-                val res = repo.createOrder(token)
-                message.value = res.message} catch (e: Exception) {
-                message.value = "Gagal membuat order"
+                val orders = repository.getOrders("Bearer $token")
+                if (orders != null) {
+                    _orders.value = orders
+                }
+            } catch (e: Exception) {
+                _message.value = e.message
             }
         }
     }
 
 
-
-    fun checkout(token: String) = viewModelScope.launch {
-        val res = repo.createOrder(token)
-        message.value = res.message
+    fun createOrder(token: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                repository.createOrder("Bearer $token")
+                _message.value = "Order berhasil dibuat"
+                onSuccess()
+            } catch (e: Exception) {
+                _message.value = e.message
+            }
+        }
     }
-
 }
-

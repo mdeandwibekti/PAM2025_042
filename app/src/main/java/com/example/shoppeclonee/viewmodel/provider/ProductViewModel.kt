@@ -70,7 +70,7 @@ class ProductViewModel(
         clearMessage()
 
         try {
-            repo.createProduct(token!!, name, price, stock, description, image)
+            repo.createProduct(token!!, name, price, stock, description, image,)
             loadProducts()
             onSuccess()
         } catch (e: Exception) {

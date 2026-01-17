@@ -2,6 +2,7 @@ package com.example.shoppeclonee.uicontroller.route
 
 import HalamanLogin
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -9,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.shoppeclonee.view.*
 import com.example.shoppeclonee.viewmodel.provider.AuthViewModel
+import com.example.shoppeclonee.viewmodel.provider.CartViewModel
 
 @Composable
 fun PetaNavigasi(
@@ -22,18 +24,15 @@ fun PetaNavigasi(
     ) {
 
         /* ================= HOME ================= */
-        // D:/semester 5/PAM/shoppeclonee/app/src/main/java/com/example/shoppeclonee/uicontroller/route/PetaNavigasi.kt
-
         composable(DestinasiHome.route) {
             HalamanHome(
                 navController = navController,
-                authVM = authVM, // Kirim authVM di sini
+                authVM = authVM,
                 onProductClick = { productId ->
                     navController.navigate("product_detail/$productId")
                 }
             )
         }
-
 
         /* ================= LOGIN ================= */
         composable("login") {
@@ -68,7 +67,6 @@ fun PetaNavigasi(
 
             val user = authVM.user.value
 
-            // 🔐 GUARD SELLER
             if (user == null || user.role != "seller") {
                 navController.navigate("login") {
                     popUpTo(0)
@@ -92,6 +90,19 @@ fun PetaNavigasi(
             )
         }
 
+        composable("product_add") {
+
+            if (authVM.token.value.isNullOrEmpty()) {
+                navController.navigate("login")
+            } else {
+                HalamanProductForm(
+                    navController = navController,
+                    mode = ProductMode.ADD,
+                    authVM = authVM
+                )
+            }
+        }
+
         /* ================= PRODUCT DETAIL ================= */
         composable(
             route = "product_detail/{id}",
@@ -109,31 +120,16 @@ fun PetaNavigasi(
             )
         }
 
-        /* ================= PRODUCT ADD ================= */
-        composable("product_add") {
-
-            // 🔐 GUARD LOGIN
-            if (authVM.token.value.isNullOrBlank()) {
-                navController.navigate("login")
-            } else {
-                HalamanProductForm(
-                    navController = navController,
-                    mode = ProductMode.ADD,
-                    authVM = authVM
-                )
-            }
-        }
-
-        /* ================= PRODUCT EDIT ================= */
         composable(
             route = "product_edit/{id}",
             arguments = listOf(
                 navArgument("id") { type = NavType.IntType }
             )
         ) { backStackEntry ->
+
             val id = backStackEntry.arguments?.getInt("id") ?: return@composable
 
-            if (authVM.token.value.isNullOrBlank()) {
+            if (authVM.token.value.isNullOrEmpty()) {
                 navController.navigate("login")
             } else {
                 HalamanProductForm(
@@ -145,23 +141,29 @@ fun PetaNavigasi(
             }
         }
 
-        composable("seller_products") {
-            HalamanSellerProductList(
+        /* ================= CART ================= */
+        composable(DestinasiCart.route) {
+
+            val cartVM: CartViewModel = viewModel()
+
+            HalamanCart(
                 navController = navController,
-                authVM = authVM
+                authVM = authVM,
+                cartVM = cartVM
             )
         }
 
+        /* ================= CHECKOUT ================= */
+        composable(DestinasiCheckout.route) {
 
-        /* ================= CART ================= */
-        // D:/.../uicontroller/route/PetaNavigasi.kt
+            val token = authVM.token.value ?: ""
 
-        /* ================= CART ================= */
-        composable(DestinasiCart.route) {
-            HalamanCart(
-                authVM = authVM, // Kirim authVM ke HalamanCart
-                onCheckout = {
-                    navController.navigate(DestinasiOrder.route)
+            HalamanCheckout(
+                token = token,
+                onOrderCreated = {
+                    navController.navigate(DestinasiOrder.route) {
+                        popUpTo(DestinasiCart.route) { inclusive = true }
+                    }
                 },
                 onBack = {
                     navController.popBackStack()

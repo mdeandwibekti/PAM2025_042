@@ -207,7 +207,7 @@ fun HalamanProductForm(
                                 price = price.toIntOrNull() ?: 0,
                                 stock = stock.toIntOrNull() ?: 0,
                                 description = description,
-                                image = imageUrl // Mengirim URI gambar baru/lama
+                                 image = imageUrl // Mengirim URI gambar baru/lama
                             ) {
                                 navController.popBackStack()
                             }

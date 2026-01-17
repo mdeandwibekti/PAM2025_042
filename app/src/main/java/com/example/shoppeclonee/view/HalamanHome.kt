@@ -36,24 +36,18 @@ fun HalamanHome(
     cartVM: CartViewModel = viewModel(),
 ) {
     var searchText by remember { mutableStateOf("") }
-
-    // State untuk BottomSheet Picker
     var showSheet by remember { mutableStateOf(false) }
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
     var quantity by remember { mutableIntStateOf(1) }
+
     val sheetState = rememberModalBottomSheetState()
 
     val products by vm.products.observeAsState(emptyList())
     val loading by vm.loading.observeAsState(false)
-    val message by vm.message.observeAsState()
 
 
     LaunchedEffect(Unit) {
         vm.loadProducts()
-    }
-
-    LaunchedEffect(authVM) {
-        cartVM.setAuth(authVM)
     }
 
     Scaffold(
@@ -66,6 +60,7 @@ fun HalamanHome(
                         placeholder = { Text("Cari produk UMKM…") },
                         singleLine = true,
                         leadingIcon = { Icon(Icons.Default.Search, null) },
+                        shape = MaterialTheme.shapes.large,
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
@@ -79,7 +74,7 @@ fun HalamanHome(
         bottomBar = { BottomBarLokalku(navController) }
     ) { pad ->
 
-        // --- BOTTOM SHEET (PICKER JUMLAH) ---
+        /* =================== BOTTOM SHEET =================== */
         if (showSheet && selectedProduct != null) {
             ModalBottomSheet(
                 onDismissRequest = { showSheet = false },
@@ -88,78 +83,93 @@ fun HalamanHome(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
-                        .padding(bottom = 32.dp)
+                        .padding(20.dp)
                 ) {
                     Text(
-                        text = selectedProduct?.name ?: "",
+                        selectedProduct!!.name,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
+
                     Text(
-                        text = "Harga: Rp ${selectedProduct?.price}",
-                        color = MaterialTheme.colorScheme.primary
+                        "Rp ${selectedProduct!!.price}",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleMedium
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(text = "Tentukan Jumlah", fontWeight = FontWeight.Medium)
+                    Spacer(Modifier.height(24.dp))
+
+                    Text("Jumlah", fontWeight = FontWeight.Medium)
 
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        FilledIconButton(
-                            onClick = { if (quantity > 1) quantity-- },
-                            colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color.LightGray)
-                        ) { Text("-", style = MaterialTheme.typography.titleLarge) }
+                        FilledIconButton(onClick = { if (quantity > 1) quantity-- }) {
+                            Text("-")
+                        }
 
                         Text(
-                            text = quantity.toString(),
+                            quantity.toString(),
                             modifier = Modifier.padding(horizontal = 32.dp),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold
                         )
 
-                        FilledIconButton(
-                            onClick = { quantity++ },
-                            colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color.LightGray)
-                        ) { Text("+", style = MaterialTheme.typography.titleLarge) }
+                        FilledIconButton(onClick = { quantity++ }) {
+                            Text("+")
+                        }
                     }
+
+                    Spacer(Modifier.height(24.dp))
 
                     Button(
                         onClick = {
                             cartVM.addToCart(
-                                authVM = authVM,
+                                token = authVM.token.value!!,
+                                userId = authVM.user.value!!.id,
                                 productId = selectedProduct!!.id,
-                                quantity = quantity,
-                                onSuccess = {
-                                    showSheet = false
-                                    navController.navigate(DestinasiCart.route)
-                                }
+                                quantity = quantity
                             )
+
+                            navController.navigate(DestinasiCart.route)
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium
+                        shape = MaterialTheme.shapes.large
                     ) {
-                        Text("Konfirmasi & Masuk Keranjang")
+                        Text("Masukkan ke Keranjang")
                     }
                 }
             }
         }
 
-        // --- LOADING & CONTENT ---
+        /* =================== CONTENT =================== */
         if (loading) {
-            Box(Modifier.fillMaxSize().padding(pad), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(pad),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator()
             }
         } else {
-            LazyColumn(modifier = Modifier.padding(pad).padding(8.dp)) {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(pad)
+                    .padding(horizontal = 12.dp)
+            ) {
                 item {
-                    // Banner Selamat Datang
                     Card(
-                        modifier = Modifier.fillMaxWidth().height(140.dp).padding(vertical = 6.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp)
+                            .padding(vertical = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
+                        shape = MaterialTheme.shapes.large
                     ) {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Text(
@@ -179,12 +189,16 @@ fun HalamanHome(
                                 modifier = Modifier
                                     .weight(1f)
                                     .padding(6.dp)
-                                    .clickable { onProductClick(p.id) }
+                                    .clickable { onProductClick(p.id) },
+                                shape = MaterialTheme.shapes.large,
+                                elevation = CardDefaults.cardElevation(4.dp)
                             ) {
-                                Column(Modifier.padding(10.dp)) {
-                                    // Di dalam Card produk HalamanHome.kt
+                                Column(Modifier.padding(12.dp)) {
+
                                     Box(
-                                        modifier = Modifier.fillMaxWidth().height(100.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(120.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         if (!p.image.isNullOrEmpty()) {
@@ -195,23 +209,37 @@ fun HalamanHome(
                                                 contentScale = ContentScale.Crop
                                             )
                                         } else {
-                                            Icon(Icons.Default.Star, null, modifier = Modifier.size(40.dp))
+                                            Icon(
+                                                Icons.Default.Star,
+                                                null,
+                                                modifier = Modifier.size(48.dp)
+                                            )
                                         }
                                     }
 
-                                    Text(p.name, maxLines = 1, fontWeight = FontWeight.Bold)
-                                    Text("Rp ${p.price}", color = MaterialTheme.colorScheme.primary)
+                                    Spacer(Modifier.height(8.dp))
 
-                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        p.name,
+                                        maxLines = 1,
+                                        fontWeight = FontWeight.Bold
+                                    )
 
-                                    // Di dalam HalamanHome.kt
+                                    Text(
+                                        "Rp ${p.price}",
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+
+                                    Spacer(Modifier.height(12.dp))
+
                                     Button(
                                         onClick = {
-                                            selectedProduct = p // 'p' adalah objek Product
+                                            selectedProduct = p
                                             quantity = 1
-                                            showSheet = true // Menampilkan Bottom Sheet untuk input jumlah
+                                            showSheet = true
                                         },
-                                        modifier = Modifier.fillMaxWidth()
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = MaterialTheme.shapes.large
                                     ) {
                                         Text("Tambah")
                                     }
